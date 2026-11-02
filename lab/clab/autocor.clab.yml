@@ -1,0 +1,34 @@
+# autocor.clab.yml - ContainerLab topology for AUTOCOR 1.3 (RESTCONF) and 3.1 (gNMI).
+# Deploy:  cd lab/clab && sudo containerlab deploy
+# Default lab credentials (admin/admin for cEOS, admin/NokiaSrl1! for SR Linux) are containerlab
+# defaults for throw-away lab nodes - not secrets, never reuse them elsewhere.
+name: autocor
+
+mgmt:
+  network: clab-mgmt
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  kinds:
+    arista_ceos:
+      image: ceos:4.32.0F
+    nokia_srlinux:
+      image: ghcr.io/nokia/srlinux:26.7.2
+      type: ixr-d2l
+
+  nodes:
+    ceos1:
+      kind: arista_ceos
+      mgmt-ipv4: 172.20.20.11
+      startup-config: ceos1.cfg
+    ceos2:
+      kind: arista_ceos
+      mgmt-ipv4: 172.20.20.12
+      startup-config: ceos2.cfg
+    srl1:
+      kind: nokia_srlinux
+      mgmt-ipv4: 172.20.20.21
+
+  links:
+    - endpoints: ["ceos1:eth1", "ceos2:eth1"]
+    - endpoints: ["ceos1:eth2", "srl1:e1-1"]

@@ -1,0 +1,38 @@
+services:
+  web:
+    image: nginx:1.27-alpine
+    ports:
+      - "0.0.0.0:8080:80"
+    volumes:
+      - inventory-data:/usr/share/nginx/html:ro
+    networks:
+      - frontend
+    depends_on:
+      collector:
+        condition: service_healthy
+    restart: unless-stopped
+
+  collector:
+    build: ./collector
+    environment:
+      CEOS_USER: ${CEOS_USER}
+      CEOS_PASSWORD: ${CEOS_PASSWORD}
+      INTERVAL: "30"
+    volumes:
+      - inventory-data:/data
+    networks:
+      - lab
+    healthcheck:
+      test: ["CMD", "test", "-s", "/data/inventory.json"]
+      interval: 10s
+      retries: 6
+    restart: unless-stopped
+
+volumes:
+  inventory-data:
+
+networks:
+  frontend:
+  lab:
+    name: clab-mgmt
+    external: true
